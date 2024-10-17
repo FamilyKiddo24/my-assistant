@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
 void main() {
@@ -12,7 +11,7 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      title: 'Utilities',
+      title: 'My Assistant',
       debugShowCheckedModeBanner: false,
       home: HomePage(),
     );
@@ -31,7 +30,8 @@ class _HomePageState extends State<HomePage> {
   final SpeechToText _speechToText = SpeechToText();
 
   bool _speechEnabled = false;
-  String _lastWords = '';
+  String _wordsSpoken = "";
+  double _confidenceLevel = 0;
 
   @override
   void initState() {
@@ -44,27 +44,23 @@ class _HomePageState extends State<HomePage> {
     setState(() {});
   }
 
- /// Each time to start a speech recognition session
   void _startListening() async {
     await _speechToText.listen(onResult: _onSpeechResult);
-    setState(() {});
+    setState(() {
+      _confidenceLevel = 0;
+    });
   }
 
-  /// Manually stop the active speech recognition session
-  /// Note that there are also timeouts that each platform enforces
-  /// and the SpeechToText plugin supports setting timeouts on the
-  /// listen method.
   void _stopListening() async {
     await _speechToText.stop();
     setState(() {});
   }
 
-  /// This is the callback that the SpeechToText plugin calls when
-  /// the platform returns recognized words.
-  void _onSpeechResult(SpeechRecognitionResult result) {
+  void _onSpeechResult(result) {
     setState(() {
-      _lastWords = result.recognizedWords;
-      promptController.text =  promptController.text + _lastWords;
+      _wordsSpoken = "${result.recognizedWords}";
+      _confidenceLevel = result.confidence;
+      promptController.text = promptController.text + _wordsSpoken;
     });
   }
 
@@ -113,17 +109,33 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: 10),
             Padding(
               padding: const EdgeInsets.only(top: 30.0),
-              child: TextField(
-                controller: promptController,
-                decoration: InputDecoration(
-                  hintText: 'Enter Ai Prompt',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextField(
+                    controller: promptController,
+                    decoration: InputDecoration(
+                      hintText: 'Enter Ai Prompt',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      labelText: 'Enter Ai Prompt',
+                    ),
                   ),
-                  labelText: 'Enter Ai Prompt',
-                ),
+                  const SizedBox(height: 10),
+                  Center(  // Adds some spacing between the text field and the confidence text
+                    child: Text(
+                      "Confidence: ${(_confidenceLevel * 100).toStringAsFixed(1)}%",
+                      style: const TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.w200,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
+
             const SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -156,13 +168,6 @@ class _HomePageState extends State<HomePage> {
                 ),
               ],
             ),
-            // FloatingActionButton(
-            //   onPressed:
-            //       // If not yet listening for speech start, otherwise stop
-            //       _speechToText.isNotListening ? _startListening : _stopListening,
-            //   tooltip: 'Listen',
-            //   child: Icon(_speechToText.isNotListening ? Icons.mic_off : Icons.mic),
-            // ),
           ],
         ),
       ),
