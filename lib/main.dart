@@ -60,7 +60,7 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _wordsSpoken = "${result.recognizedWords}";
       _confidenceLevel = result.confidence;
-      promptController.text = promptController.text + _wordsSpoken;
+      promptController.text = _wordsSpoken;
     });
   }
 
@@ -106,7 +106,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
-            const SizedBox(height: 10),
+            //const SizedBox(height: 3),
             Padding(
               padding: const EdgeInsets.only(top: 30.0),
               child: Column(
@@ -136,7 +136,7 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
 
-            const SizedBox(height: 10),
+            const SizedBox(height: 5),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
