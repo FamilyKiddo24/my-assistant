@@ -27,6 +27,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  String confidenceText = "Start Talking!";
 
   TextEditingController promptController = TextEditingController();
   final SpeechToText _speechToText = SpeechToText();
@@ -52,12 +53,17 @@ class _HomePageState extends State<HomePage> {
     player.play(AssetSource('sounds/assistant-on.mp3'));
     setState(() {
       _confidenceLevel = 0;
+      confidenceText = "Listening!";
     });
   }
 
   void _stopListening() async {
     await _speechToText.stop();
-    setState(() {});
+    final player = AudioPlayer();
+    player.play(AssetSource('sounds/assistant-end.mp3'));
+    setState(() {
+      confidenceText = "Confidence: ${(_confidenceLevel * 100).toStringAsFixed(1)}%";
+    });
   }
 
   void _onSpeechResult(result) {
@@ -65,8 +71,6 @@ class _HomePageState extends State<HomePage> {
       _wordsSpoken = "${result.recognizedWords}";
       _confidenceLevel = result.confidence;
       promptController.text = _wordsSpoken;
-      final player = AudioPlayer();
-      player.play(AssetSource('sounds/assistant-end.mp3'));
     });
   }
 
@@ -102,11 +106,11 @@ class _HomePageState extends State<HomePage> {
                   child: FittedBox(
                     child: FloatingActionButton(
                       onPressed: _speechToText.isNotListening ? _startListening : _stopListening,
+                      elevation: 0,
                       child: Ink.image(
                         image: const AssetImage('assets/Microphone-Logo.png'),                     
                         fit: BoxFit.cover,
-                      ),
-                      elevation: 0, // Remove button shadow
+                      ), // Remove button shadow
                     ),
                   ),
                 ),
@@ -131,7 +135,7 @@ class _HomePageState extends State<HomePage> {
                   const SizedBox(height: 10),
                   Center(  // Adds some spacing between the text field and the confidence text
                     child: Text(
-                      "Confidence: ${(_confidenceLevel * 100).toStringAsFixed(1)}%",
+                      confidenceText,
                       style: const TextStyle(
                         fontSize: 30,
                         fontWeight: FontWeight.w200,
@@ -165,8 +169,6 @@ class _HomePageState extends State<HomePage> {
                     backgroundColor: Colors.blue,
                   ),
                   onPressed: () {
-                    final player = AudioPlayer();
-                    player.play(AssetSource('sounds/assistant-on.mp3'));
                   },
                   child: const Text(
                     'Generate',
