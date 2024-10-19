@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
 void main() {
@@ -26,6 +27,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+
   TextEditingController promptController = TextEditingController();
   final SpeechToText _speechToText = SpeechToText();
 
@@ -46,6 +48,8 @@ class _HomePageState extends State<HomePage> {
 
   void _startListening() async {
     await _speechToText.listen(onResult: _onSpeechResult);
+    final player = AudioPlayer();
+    player.play(AssetSource('sounds/assistant-on.mp3'));
     setState(() {
       _confidenceLevel = 0;
     });
@@ -61,6 +65,8 @@ class _HomePageState extends State<HomePage> {
       _wordsSpoken = "${result.recognizedWords}";
       _confidenceLevel = result.confidence;
       promptController.text = _wordsSpoken;
+      final player = AudioPlayer();
+      player.play(AssetSource('sounds/assistant-end.mp3'));
     });
   }
 
@@ -159,7 +165,8 @@ class _HomePageState extends State<HomePage> {
                     backgroundColor: Colors.blue,
                   ),
                   onPressed: () {
-                    _speechToText.isNotListening ? _startListening : _stopListening;
+                    final player = AudioPlayer();
+                    player.play(AssetSource('sounds/assistant-on.mp3'));
                   },
                   child: const Text(
                     'Generate',
