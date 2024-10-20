@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:speech_to_text/speech_to_text.dart';
+import 'package:chat_bubbles/chat_bubbles.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
 
 void main() {
   runApp(const MainApp());
@@ -26,7 +28,14 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
+const apiKey = 'AIzaSyArJL_wdCbYZh5acXnCJKzjssvuDFXWjk0';
+
 class _HomePageState extends State<HomePage> {
+  final model = GenerativeModel(
+    model: 'gemini-1.5-flash-latest',
+    apiKey: apiKey
+  );
+
   String confidenceText = "Start Talking!";
 
   TextEditingController promptController = TextEditingController();
@@ -35,6 +44,45 @@ class _HomePageState extends State<HomePage> {
   bool _speechEnabled = false;
   String _wordsSpoken = "";
   double _confidenceLevel = 0;
+
+  List<Widget> bubbles = [];
+
+  void respondToText(String message) async {
+    var prompt = message;
+    var responce = await model.generateContent([Content.text(prompt)]);
+    sendGreyBubbles(responce.text);
+    print(responce.text);
+  }
+
+  void sendGreyBubbles(text) {
+    setState(() {
+      bubbles.add(BubbleSpecialThree(
+        text: text,
+        color: const Color.fromARGB(255, 161, 161, 170),
+        tail: true,
+        isSender: false,
+        textStyle: const TextStyle(
+          color:  Color.fromARGB(255, 255, 255, 255),
+          fontSize: 16,
+        )
+      ));
+    });
+  }
+
+  void sendBlueBubbles(String text) {
+    setState(() {
+      bubbles.add(BubbleSpecialThree(
+        text: text,
+        color: const Color.fromARGB(255, 27, 149, 243),
+        tail: true,
+        isSender: true,
+        textStyle: const TextStyle(
+          color:  Color.fromARGB(255, 255, 255, 255),
+          fontSize: 16,
+        )
+      ));
+    });
+  }
 
   @override
   void initState() {
@@ -132,7 +180,7 @@ class _HomePageState extends State<HomePage> {
                       labelText: 'Enter Ai Prompt',
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 3),
                   Center(  // Adds some spacing between the text field and the confidence text
                     child: Text(
                       confidenceText,
@@ -146,7 +194,6 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
 
-            const SizedBox(height: 5),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -169,6 +216,11 @@ class _HomePageState extends State<HomePage> {
                     backgroundColor: Colors.blue,
                   ),
                   onPressed: () {
+                    if (promptController.text.isNotEmpty) {
+                        sendBlueBubbles(promptController.text);
+                        respondToText(promptController.text);
+                        promptController.text = ''; // Clear the text field
+                      }
                   },
                   child: const Text(
                     'Generate',
@@ -176,6 +228,29 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 5,),
+             // Fade effect just before the scrollable area
+            Container(
+              height: 10, // Adjust the height of the fade effect
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.white,    // Start with a solid color
+                    Colors.grey    // Fade out to white
+                  ],
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                ),
+              ),
+            ),
+            const SizedBox(height: 5,),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: bubbles, // Use the bubbles list directly
+                ),
+              ),
             ),
           ],
         ),
