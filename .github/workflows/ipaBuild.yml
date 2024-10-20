@@ -37,6 +37,6 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: build/ios/iphoneos/FlutterIpaExport.ipa
-          tag: v1.0.6
+          tag: v1.0.0
           overwrite: true
-          body: "Added Audio To Speech To Text so you can hear it use your mic (ios)"
+          body: "!! The Real First Release !!"
